@@ -1,0 +1,48 @@
+import org.apache.tools.ant.filters.ReplaceTokens
+
+plugins {
+    id 'java'
+    id 'org.jetbrains.kotlin.jvm' version '1.5.20'
+    id 'com.github.johnrengelman.shadow' version '6.1.0'
+}
+
+group 'net.pluginstube.skywars'
+version '1.0'
+
+sourceCompatibility = targetCompatibility = '11'
+compileJava.options.encoding = "UTF-8"
+
+repositories {
+    mavenCentral()
+    maven {
+        url = "https://repo.pluginstube.gay/releases"
+    }
+}
+
+processResources {
+    from(sourceSets.main.resources.srcDirs) {
+        filter ReplaceTokens, tokens: [
+                version    : version,
+                description: project.property('plugin.description'),
+                author     : project.property('plugin.author'),
+                website    : project.property('plugin.website'),
+        ]
+        duplicatesStrategy = 'include'
+    }
+}
+
+dependencies {
+    implementation "org.jetbrains.kotlin:kotlin-stdlib"
+    implementation('com.github.cryptomorin:XSeries:7.9.1.1')
+    implementation 'fr.mrmicky:fastboard:1.2.0'
+
+    compileOnly 'org.spigotmc:spigot-api:1.8.8-R0.1-SNAPSHOT'
+}
+
+shadowJar {
+    relocate 'fr.mrmicky.fastboard', 'net.pluginstube.skywars.plugin.libs.fastboard'
+    relocate 'com.cryptomorin.xseries', 'net.pluginstube.skywars.plugin.libs.xseries'
+
+
+    archiveFileName = "skywars-${version}.jar"
+}

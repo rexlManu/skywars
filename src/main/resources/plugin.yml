@@ -1,0 +1,9 @@
+name: SkyWars
+version: @version@
+author: @author@
+description: @description@
+website: @website@
+main: net.pluginstube.skywars.plugin.SkyWarsPlugin
+commands:
+  skywars:
+    permission: skywars.command.use
