@@ -1,4 +1,4 @@
-package net.pluginstube.skywars.plugin.team.adapters
+package net.pluginstube.skywars.plugin.utility.adapters
 
 import com.google.gson.TypeAdapter
 import com.google.gson.stream.JsonReader

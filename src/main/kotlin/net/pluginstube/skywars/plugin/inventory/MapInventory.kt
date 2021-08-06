@@ -1,16 +1,19 @@
 package net.pluginstube.skywars.plugin.inventory
 
 import net.pluginstube.skywars.plugin.SkyWarsPlugin
+import net.pluginstube.skywars.plugin.inventory.event.PlayerMapSelectEvent
 import net.pluginstube.skywars.plugin.utility.*
 import net.pluginstube.skywars.plugin.utility.item.name
+import org.bukkit.Bukkit
 import org.bukkit.Material
 import org.bukkit.Sound
 import org.bukkit.entity.Player
+import org.bukkit.event.EventHandler
 import org.bukkit.event.inventory.InventoryClickEvent
 import org.bukkit.inventory.ItemStack
 import org.bukkit.inventory.meta.ItemMeta
 
-class MapInventory(var plugin: SkyWarsPlugin, player: Player, var update: (() -> Unit)? = null) :
+class MapInventory(var plugin: SkyWarsPlugin, player: Player) :
     InventoryHandler(player, "Mapvoting", 5) {
 
     var mapSlots = mutableMapOf<Int, Int>()
@@ -51,10 +54,11 @@ class MapInventory(var plugin: SkyWarsPlugin, player: Player, var update: (() ->
         player.message("Du hast für die Map &p${gameMap.map.name}&t abgestimmt.")
         player.playSound(Sound.LEVEL_UP, 1f)
 
-        update?.invoke()
+        Bukkit.getPluginManager().callEvent(PlayerMapSelectEvent(player))
     }
 
     override fun setItems() {
+        mapSlots.clear()
         plugin.gameMapManager.maps.forEachIndexed { index, gameMap ->
             val map = gameMap.map
             val slot = addItem(item(map.displayItem.material) {
@@ -62,9 +66,15 @@ class MapInventory(var plugin: SkyWarsPlugin, player: Player, var update: (() ->
                     displayName = "&p${map.name}".withParameters()
                     lore = listOf("&t${map.description}".withParameters())
                     durability = map.displayItem.data
+                    amount = gameMap.voters.size
                 }
             })
             mapSlots[slot] = index
         }
+    }
+
+    @EventHandler
+    fun handle(event: PlayerMapSelectEvent) {
+        setItems()
     }
 }

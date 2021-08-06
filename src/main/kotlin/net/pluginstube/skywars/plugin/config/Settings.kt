@@ -7,5 +7,6 @@ class Settings(plugin: JavaPlugin) {
     var teamSize: Int = plugin.config.getInt("team-size", 1)
     var teams: Int = plugin.config.getInt("teams", 8)
     var minPlayers: Int = plugin.config.getInt("min-players", 2)
+    var gracePeriod: Int = plugin.config.getInt("grace-period", 30)
 
 }

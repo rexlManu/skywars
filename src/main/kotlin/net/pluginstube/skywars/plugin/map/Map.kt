@@ -22,12 +22,10 @@ class Map(
 
     fun displayItemStack() = displayItem.toItemStack(name)
 
-    var world = Bukkit.getWorld(worldName)
-
     fun location(key: String): Location? {
         val position = positions[key] ?: return null
         return Location(
-            world,
+            Bukkit.getWorld(worldName),
             position.x.toDouble(),
             position.y.toDouble(),
             position.z.toDouble(),

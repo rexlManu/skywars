@@ -7,6 +7,9 @@ import net.pluginstube.skywars.plugin.gamestate.State
 import net.pluginstube.skywars.plugin.inventory.KitInventory
 import net.pluginstube.skywars.plugin.inventory.MapInventory
 import net.pluginstube.skywars.plugin.inventory.TeamInventory
+import net.pluginstube.skywars.plugin.inventory.event.PlayerKitSelectEvent
+import net.pluginstube.skywars.plugin.inventory.event.PlayerMapSelectEvent
+import net.pluginstube.skywars.plugin.inventory.event.PlayerTeamSelectEvent
 import net.pluginstube.skywars.plugin.utility.*
 import net.pluginstube.skywars.plugin.utility.item.name
 import org.bukkit.Bukkit
@@ -24,6 +27,9 @@ import org.bukkit.inventory.meta.ItemMeta
 import org.bukkit.scheduler.BukkitTask
 import java.util.*
 
+/**
+ * Handles the lobby state and prepares players for the [PlayingState ]
+ */
 class WaitingState(private val plugin: SkyWarsPlugin) : State, Runnable {
     private val startSeconds = 60
     val leaveItem = item(Material.NETHER_STAR) {
@@ -63,6 +69,18 @@ class WaitingState(private val plugin: SkyWarsPlugin) : State, Runnable {
 
     override fun end() {
         countdownTask.cancel()
+
+        Bukkit.getOnlinePlayers().forEach {
+            // Check for player if he doesnt have a team
+            if (plugin.teamManager.getTeam(it.uniqueId) == null) {
+                plugin.teamManager.findTeam().members += it.uniqueId
+            }
+            var gamePlayer = plugin.gamePlayerContainer.getPlayer(it.uniqueId)
+            // Check for player if he doesnt choose a kit
+            if (gamePlayer.kit == null) {
+                gamePlayer.kit = plugin.kitManager.kits.first()
+            }
+        }
     }
 
     override fun run() {
@@ -163,21 +181,18 @@ class WaitingState(private val plugin: SkyWarsPlugin) : State, Runnable {
                 MapInventory(plugin, player).apply {
                     register(plugin)
                     open()
-                    update = {
-                        updateLines(player)
-                    }
                 }
             }
             kitSelectorItem -> {
                 player.playSound(Sound.CHEST_OPEN, 2f)
-                KitInventory(player).apply {
+                KitInventory(plugin, player).apply {
                     register(plugin)
                     open()
                 }
             }
             teamSelectorItem -> {
                 player.playSound(Sound.CHEST_OPEN, 2f)
-                TeamInventory(plugin,player).apply {
+                TeamInventory(plugin, player).apply {
                     register(plugin)
                     open()
                 }
@@ -207,6 +222,7 @@ class WaitingState(private val plugin: SkyWarsPlugin) : State, Runnable {
     }
 
     private fun updateLines(player: Player) {
+        var gamePlayer = plugin.gamePlayerContainer.getPlayer(player.uniqueId)
         fastBoards[player.uniqueId]?.updateLines(
             listOf(
                 "",
@@ -214,16 +230,25 @@ class WaitingState(private val plugin: SkyWarsPlugin) : State, Runnable {
                 " &td» &p" + plugin.gameMapManager.getVotedMap(player.uniqueId) ?: "???",
                 "",
                 "&tDein Kit&td:",
-                " &td» &p???",
+                " &td» &p" + gamePlayer.kit?.name ?: "???",
                 "",
                 "&tDein Team&td:",
-                " &td» &p???",
+                " &td» &p" + plugin.teamManager.getTeam(player.uniqueId) ?: "???",
                 "",
                 "&tSpieler&td:",
                 " &td» &p" + Bukkit.getOnlinePlayers().size,
             ).map { it.withParameters().withColors() }.toList()
         )
     }
+
+    @EventHandler
+    fun handle(event: PlayerTeamSelectEvent) = updateLines(event.player)
+
+    @EventHandler
+    fun handle(event: PlayerKitSelectEvent) = updateLines(event.player)
+
+    @EventHandler
+    fun handle(event: PlayerMapSelectEvent) = updateLines(event.player)
 
     @EventHandler
     fun handle(event: PlayerDropItemEvent) = event.apply { isCancelled = true }

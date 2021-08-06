@@ -1,17 +1,19 @@
 package net.pluginstube.skywars.plugin.inventory
 
 import net.pluginstube.skywars.plugin.SkyWarsPlugin
+import net.pluginstube.skywars.plugin.inventory.event.PlayerTeamSelectEvent
 import net.pluginstube.skywars.plugin.utility.*
 import net.pluginstube.skywars.plugin.utility.item.name
 import org.bukkit.Bukkit
 import org.bukkit.Material
 import org.bukkit.Sound
 import org.bukkit.entity.Player
+import org.bukkit.event.EventHandler
 import org.bukkit.event.inventory.InventoryClickEvent
 import org.bukkit.inventory.ItemStack
 import org.bukkit.inventory.meta.ItemMeta
 
-class TeamInventory(var plugin: SkyWarsPlugin, player: Player, var update: (() -> Unit)? = null) :
+class TeamInventory(var plugin: SkyWarsPlugin, player: Player) :
     InventoryHandler(player, "Teamauswahl", 5) {
 
     var teamSlots = mutableMapOf<Int, Int>()
@@ -45,7 +47,7 @@ class TeamInventory(var plugin: SkyWarsPlugin, player: Player, var update: (() -
         player.message("Du hast das Team &p${team.teamName.name}&t betreten.")
         player.playSound(Sound.LEVEL_UP, 1f)
 
-        update?.invoke()
+        Bukkit.getPluginManager().callEvent(PlayerTeamSelectEvent(player))
     }
 
     override fun pattern(): Array<CharArray> = arrayOf(
@@ -71,4 +73,9 @@ class TeamInventory(var plugin: SkyWarsPlugin, player: Player, var update: (() -
         })
 
     )
+
+    @EventHandler
+    fun handle(event: PlayerTeamSelectEvent) {
+        setItems()
+    }
 }

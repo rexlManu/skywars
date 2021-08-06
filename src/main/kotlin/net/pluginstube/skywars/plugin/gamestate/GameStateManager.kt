@@ -11,8 +11,8 @@ class GameStateManager(private val plugin: SkyWarsPlugin) {
 
     val states = mapOf(
         GameState.WAITING to WaitingState(plugin),
-        GameState.PLAYING to PlayingState(),
-        GameState.ENDING to EndingState()
+        GameState.PLAYING to PlayingState(plugin),
+        GameState.ENDING to EndingState(plugin)
     )
 
     var currentGameState: GameState = GameState.CREATING

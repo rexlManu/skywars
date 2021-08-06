@@ -3,12 +3,13 @@ package net.pluginstube.skywars.plugin.map
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import net.pluginstube.skywars.plugin.utility.adapters.MaterialTypeAdapter
+import net.pluginstube.skywars.plugin.utility.stopModification
+import org.bukkit.Bukkit
 import org.bukkit.Material
+import org.bukkit.WorldCreator
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.StandardOpenOption
-import java.util.function.Consumer
-import java.util.function.Supplier
 import java.util.stream.Collectors
 
 class MapManager(val mapDirectory: Path) {
